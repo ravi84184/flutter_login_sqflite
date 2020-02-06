@@ -1,10 +1,11 @@
 import '../model/user.dart';
 import 'database_creator.dart';
 
-class RepositoryService {
+class UserRepositoryService {
   static Future<List<User>> getAllUser() async {
     final sql = '''SELECT * FROM ${DatabaseCreator.userTable}
-      WHERE ${DatabaseCreator.id} == 0''';
+      ''';
+//      WHERE ${DatabaseCreator.id} == 0''';
     final data = await db.rawQuery(sql);
 
     List<User> userList = new List();
@@ -36,6 +37,12 @@ class RepositoryService {
     } else {
       return null;
     }
+  }
+  static Future<bool> deleteUser(int id) async {
+    final sql = '''DELETE FROM ${DatabaseCreator.userTable}
+      WHERE ${DatabaseCreator.id} = "$id"''';
+    final data = await db.rawQuery(sql);
+    return true;
   }
 
   static Future<void> addUsers(User todo) async {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login_sqflite/model/user.dart';
-import 'package:flutter_login_sqflite/repository/repository_service.dart';
+import 'package:flutter_login_sqflite/repository/userRepositoryService.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -14,9 +14,9 @@ class _SignUpPageState extends State<SignUpPage> {
   void createUser(context) async {
     if (_formKey.currentState.validate()) {
       _formKey.currentState.save();
-      int count = await RepositoryService.userCount();
+      int count = await UserRepositoryService.userCount();
       final todo = User(count, name, email, password);
-      await RepositoryService.addUsers(todo);
+      await UserRepositoryService.addUsers(todo);
       Navigator.pop(context);
     }
   }

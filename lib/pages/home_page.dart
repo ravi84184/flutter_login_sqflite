@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_login_sqflite/model/user.dart';
-import 'package:flutter_login_sqflite/repository/repository_service.dart';
+import 'package:flutter_login_sqflite/model/todo.dart';
+import 'package:flutter_login_sqflite/pages/add_todo.dart';
+import 'package:flutter_login_sqflite/repository/todoRepositoryService.dart';
+import 'package:flutter_login_sqflite/utils/Constant.dart';
+import 'package:flutter_login_sqflite/utils/PreferenceManager.dart';
+
+import '../main.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -8,12 +13,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Future<List<User>> future;
+  List<TodoModel> todoList = new List();
+  var userId = "", userName = "", userEmail = "";
 
   @override
   initState() {
     super.initState();
-    future = RepositoryService.getAllUser();
+    getUserUserId();
+  }
+
+  void getUserUserId() async {
+    userId = await PreferenceManager().getPref(Constant.userID);
+    userEmail = await PreferenceManager().getPref(Constant.userEmail);
+    userName = await PreferenceManager().getPref(Constant.userName);
+    getTodoList();
+  }
+
+  getTodoList() async {
+    todoList = await TodoRepositoryService.getUserTodoList(userId);
+    setState(() {
+
+    });
   }
 
   @override
@@ -21,63 +41,49 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Home Page"),
-      ),
-      body: ListView(
-        children: <Widget>[
-          FutureBuilder<List<User>>(
-            future: future,
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Column(
-                    children:
-                        snapshot.data.map((todo) => buildItem(todo)).toList());
-              } else {
-                return SizedBox();
-              }
+        actions: <Widget>[
+          InkWell(
+            onTap: () {
+              PreferenceManager().remove();
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: ((_) => MyHomePage())),
+                  (Route<dynamic> route) => false);
             },
+            child: Icon(Icons.lock),
           )
         ],
       ),
-    );
-  }
-
-  Widget buildItem(User todo) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'name: ${todo.name}',
-              style: TextStyle(fontSize: 24),
-            ),
-            Text(
-              'email: ${todo.email}',
-              style: TextStyle(fontSize: 20),
-            ),
-            SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                /*FlatButton(
-                  onPressed: () => updateTodo(todo),
-                  child: Text('Update todo',
-                      style: TextStyle(color: Colors.white)),
-                  color: Colors.green,
-                ),*/
-                SizedBox(width: 8),
-                FlatButton(
-                  onPressed: () {
-//                    deleteTodo(todo);
-                  },
-                  child: Text('Delete'),
+      body: Container(
+        child: todoList.isNotEmpty
+            ? Container(
+                child: ListView.builder(
+                  itemBuilder: ((context, index) {
+                    TodoModel model = todoList[index];
+                    return Container(
+                      child: Card(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(model.title),
+                            Text(model.description),
+                          ],
+                        ),
+                      ),
+                    );
+                  }),
+                  itemCount: todoList.length,
                 ),
-              ],
-            )
-          ],
-        ),
+              )
+            : Container(),
       ),
+      floatingActionButton: FloatingActionButton(onPressed: () async {
+        var result = await Navigator.push(
+            context, MaterialPageRoute(builder: ((_) => AddTodo())));
+        if(result != null){
+          getTodoList();
+        }
+      }),
     );
   }
 }

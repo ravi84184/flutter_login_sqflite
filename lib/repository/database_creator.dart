@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:path/path.dart';
@@ -6,15 +5,23 @@ import 'package:sqflite/sqflite.dart';
 
 Database db;
 
-
-class DatabaseCreator{
+class DatabaseCreator {
   static const userTable = 'userTable';
   static const id = 'id';
   static const name = 'name';
   static const email = 'email';
   static const password = 'password';
+
+  static const todoTable = 'todoTable';
+  static const todoId = 'id';
+  static const userId = 'userId';
+  static const todoTitle = 'todoTitle';
+  static const todoDescription = 'todoDescription';
+
   static void databaseLog(String functionName, String sql,
-      [List<Map<String, dynamic>> selectQueryResult, int insertAndUpdateQueryResult, List<dynamic> params]) {
+      [List<Map<String, dynamic>> selectQueryResult,
+      int insertAndUpdateQueryResult,
+      List<dynamic> params]) {
     print(functionName);
     print(sql);
     if (params != null) {
@@ -27,17 +34,24 @@ class DatabaseCreator{
     }
   }
 
-
   Future<void> createUserTable(Database db) async {
-    final todoSql = '''CREATE TABLE $userTable
+    final userSql = '''CREATE TABLE $userTable
     (
       $id INTEGER PRIMARY KEY,
       $name TEXT,
       $email TEXT,
       $password TEXT
     )''';
+    final todoSql = '''CREATE TABLE $todoTable
+    (
+      $todoId INTEGER PRIMARY KEY,
+      $userId INTEGER,
+      $todoTitle TEXT,
+      $todoDescription TEXT
+    )''';
 
     await db.execute(todoSql);
+    await db.execute(userSql);
   }
 
   Future<String> getDatabasePath(String dbName) async {

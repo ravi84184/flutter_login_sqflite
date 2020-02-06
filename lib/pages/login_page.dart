@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login_sqflite/model/user.dart';
 import 'package:flutter_login_sqflite/pages/home_page.dart';
-import 'package:flutter_login_sqflite/repository/repository_service.dart';
+import 'package:flutter_login_sqflite/repository/userRepositoryService.dart';
+import 'package:flutter_login_sqflite/utils/Constant.dart';
+import 'package:flutter_login_sqflite/utils/PreferenceManager.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -32,9 +34,20 @@ class _LoginPageState extends State<LoginPage> {
             onPressed: () async {
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
-                user = await RepositoryService.checkUserLogin(email, password);
-                Navigator.push(context,
-                    MaterialPageRoute(builder: ((_) => HomePage())));
+                user =
+                    await UserRepositoryService.checkUserLogin(email, password);
+                if (user != null) {
+                  PreferenceManager()
+                      .setPref(Constant.userID, user.id.toString());
+                  PreferenceManager()
+                      .setPref(Constant.userEmail, user.email.toString());
+                  PreferenceManager()
+                      .setPref(Constant.userName, user.name.toString());
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: ((_) => HomePage())),
+                      (Route<dynamic> route) => false);
+                }
               }
             },
             child: Text("Login"),
